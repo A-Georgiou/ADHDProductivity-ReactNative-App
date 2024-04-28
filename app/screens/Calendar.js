@@ -57,9 +57,9 @@ const Calendar = ({ navigation }) => {
     return (
         <View style={styles.calendarContainer}>
             <View style={styles.topHeader}>
-                <Button title="Previous" onPress={() => updateMonth(false)} />
+                <TouchableOpacity style={styles.dateChange} onPress={() => updateMonth(false)}><Text style={styles.dateChangeText}>&lt;</Text></TouchableOpacity>
                 <Text style={styles.monthHeader}>{monthsOfYear[selectedMonth]} {selectedYear}</Text>
-                <Button title="Next" onPress={() => updateMonth(true)} />
+                <TouchableOpacity style={styles.dateChange} onPress={() => updateMonth(true)}><Text style={styles.dateChangeText}>&gt;</Text></TouchableOpacity>
             </View>
             {renderHeader()}
             {renderDays()}
@@ -76,7 +76,9 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginBottom: 20,
+        padding: 3,
+        height: 45, // You can adjust the height as needed
+        fontSize: 26, // Optional for better visibility
     },
     header: {
         flexDirection: 'row',
@@ -107,7 +109,24 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 10
-    }
+    },
+    dateChange: {
+        padding: 10,
+        backgroundColor: 'blue',
+        borderRadius: 5,
+        justifyContent: 'center', // Centers children vertically in the container
+        alignItems: 'center', // Centers children horizontally in the container
+        height: 45, // You can adjust the height as needed
+        width: 50,
+        marginLeft: 20,
+        marginRight: 20
+    },
+    dateChangeText: {
+        color: 'white',
+        fontSize: 16, // Optional for better visibility
+        fontWeight: 'bold', // Optional for better visibility
+        textAlign: 'center' // Ensures text alignment is centered if text wraps
+    },
 });
 
 export default Calendar;

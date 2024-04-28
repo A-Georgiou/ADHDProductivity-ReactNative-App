@@ -4,7 +4,7 @@ import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useFonts } from 'expo-font';
 
-const Login = () => {
+const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -12,7 +12,10 @@ const Login = () => {
         'Raleway-Medium': require('../../assets/fonts/Raleway-Medium.ttf'),
       });
     const auth = FIREBASE_AUTH;
-
+    
+    /*
+    * Function to handle errors when signing in or creating an account
+    */
     function handleSignInLoginErrors(error) {
         if (error.code === 'auth/invalid-credential') {
             alert('Incorrect password, please try again.');
@@ -31,6 +34,9 @@ const Login = () => {
         }
     }
 
+    /*
+    * Async FireBase sign in function
+    */
     const signIn = async () => {
         setLoading(true);
         const response = signInWithEmailAndPassword(auth, email, password)
@@ -44,6 +50,9 @@ const Login = () => {
         });
     }
 
+     /*
+    * Async FireBase sign up function
+    */
     const signUp = async () => {
         setLoading(true);
         const response = createUserWithEmailAndPassword(auth, email, password)

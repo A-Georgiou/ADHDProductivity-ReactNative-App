@@ -12,7 +12,6 @@ import Calendar from './app/screens/Calendar';
 import Agenda from './app/screens/Agenda';
 
 const Stack = createNativeStackNavigator();
-
 const InsideStack = createNativeStackNavigator();
 
 function InsideLayout() {
@@ -39,7 +38,7 @@ export default function App() {
       <Stack.Navigator initialRouteName='Login'>
         {user ? 
         (
-          <Stack.Screen name='Login' component={InsideLayout} options={{ headerShown: false }}/>
+          <Stack.Screen name='LoggedIn' component={InsideLayout} options={{ headerShown: false }}/>
         ) :
         (
           <Stack.Screen name='Login' component={Login} options={{ headerShown: false }}/>
