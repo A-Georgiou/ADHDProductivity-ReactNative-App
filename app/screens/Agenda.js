@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, FlatList, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, FlatList, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import CalendarBlock from './CalendarBlock';
-
-const MINUTE_HEIGHT = 1;
+import EventCreator from '../components/EventCreator';
+const MINUTE_HEIGHT = 2;
 
 class Event {
     constructor(id, title, start, end, allDay) {
@@ -17,7 +17,9 @@ class Event {
 
 
 const Agenda = ({ route, navigation }) => {
-    const hours = Array.from({ length: 24*60 }, (_, index) => index);
+    const [temporaryEvent, setTemporaryEvent] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false);
+
     const { day, month, year } = route.params;
     // Sample data for events
     const events = [
@@ -70,9 +72,29 @@ const Agenda = ({ route, navigation }) => {
 
         return { top, height };
     }
-    calculateOverlapCoeff(events);
-    
 
+    function calculateHourStartHourEnd(hour){
+        const top = hour * 60 * MINUTE_HEIGHT;
+        const height = 60 * MINUTE_HEIGHT;
+
+        if (temporaryEvent !== null && temporaryEvent.hour === hour){
+            setTemporaryEvent(null);
+            return;
+        }
+        setModalVisible(true);
+        setTemporaryEvent({ 'hour': hour, 'top': top, 'height': height });
+
+    }
+
+    calculateOverlapCoeff(events);
+
+    const RenderTempHour = () => {
+        return (
+            <View style={[styles.temp_event, { top: temporaryEvent.top, height: temporaryEvent.height, left: 45}]}>
+            </View>
+        );
+    }
+    
     const RenderHour = ({ hour, event }) => {
         return (
             <View style={[styles.event, { top: hour.top, height: hour.height, left: 45 + (event.overlapCoefficient * 10)}]}>
@@ -85,13 +107,16 @@ const Agenda = ({ route, navigation }) => {
     // Creating hour lines
     const hourLines = Array.from({ length: 24 }).map((_, index) => (
         <>
-        <Text style={[styles.hourText, { top: (MINUTE_HEIGHT * 60 * index) - (20 * index) - 10 }]}>{index == 0 ? 12 : index%12}{index < 12 ? 'am' : 'pm'}</Text>
-        <View key={index} style={[styles.hourLine, { top: MINUTE_HEIGHT * 60 * index}]} />
+        <View style={{position: 'absolute', width: '100%', height: MINUTE_HEIGHT * 60, top: MINUTE_HEIGHT * 60 * index, zIndex: 100}}  onTouchEnd={(e) => {calculateHourStartHourEnd(index)}}></View>
+        <Text style={[styles.hourText, { top: (MINUTE_HEIGHT * 60 * index) - (20 * index) - 10 }]}>
+            {`${index === 0 ? 12 : index % 12}${index < 12 ? 'am' : 'pm'}`}
+        </Text>
+        <View style={[styles.hourLine, { top: MINUTE_HEIGHT * 60 * index}]}/>
         </>
     ));
 
     return (<>
-        
+        <EventCreator modalVisible={modalVisible} setModalVisible={setModalVisible}/>
         <ScrollView style={{ flex: 1 }}>
             <View>
                 <Text style={{fontSize: 20, textAlign: 'center', padding: 10}}>{day}/{month}/{year}</Text>
@@ -99,8 +124,9 @@ const Agenda = ({ route, navigation }) => {
             <View style={styles.container}>
                 {hourLines}
                 {events.map((event, index) => (
-                    <RenderHour key={index} hour={calculateHeight(event)} event={event} />
+                    <RenderHour key={index} hour={calculateHeight(event)} event={event}/>
                 ))}
+                {temporaryEvent ? <RenderTempHour/> : <View></View>}
             </View>
         </ScrollView>
         </>
@@ -114,6 +140,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         height: MINUTE_HEIGHT * 60 * 24, // Full day, minute by minute
         width: '100%',
+        marginBottom: 10
     },
     event: {
         position: 'absolute',
@@ -123,6 +150,14 @@ const styles = StyleSheet.create({
         left: 40,
         borderColor: 'white',
         borderWidth: 1,
+    },
+    temp_event: {
+        position: 'absolute',
+        width: '80%', // Assume full width for simplicity
+        borderRadius: 8,
+        left: 40,
+        borderColor: 'black',
+        borderWidth: 3,
     },
     hourLine: {
         position: 'absolute',

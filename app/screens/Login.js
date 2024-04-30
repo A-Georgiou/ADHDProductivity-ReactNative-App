@@ -9,7 +9,8 @@ const Login = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [fontsLoaded, fontError] = useFonts({
-        'Raleway-Medium': require('../../assets/fonts/Raleway-Medium.ttf'),
+        'raleway-medium': require('../../assets/fonts/Raleway-Medium.ttf'),
+        'RalewayMedium': require('../../assets/fonts/Raleway-Medium.ttf'),
       });
     const auth = FIREBASE_AUTH;
     
@@ -65,6 +66,10 @@ const Login = ({ navigation }) => {
             setLoading(false);
         });
     }  
+
+    if (!fontsLoaded) {
+        return null;
+    };
 
     return (
         <View style={styles.container}>
