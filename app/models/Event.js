@@ -7,4 +7,13 @@ export default class Event {
         this.allDay = allDay;
         this.overlapCoefficient = 0;
     }
+
+    toFirebaseObject() {
+        return {
+            title: this.title,
+            start: this.start,
+            end: this.end,
+            allDay: this.allDay,
+        };
+    }
 }

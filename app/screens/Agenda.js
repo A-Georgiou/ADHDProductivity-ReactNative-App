@@ -9,6 +9,7 @@ import { MINUTE_HEIGHT } from '../config/UIDimensions';
 
 const Agenda = ({ route, navigation }) => {
     const [temporaryEvent, setTemporaryEvent] = useState(null);
+    const [temporaryHour, setTemporaryHour] = useState(null);
     const [createEventModalVisible, setCreateEventModalVisible] = useState(false);
     const [manageEventModalVisible, setManageEventModalVisible] = useState(false);
     const [manageEventModalEvent, setManageEventModalEvent] = useState(null);
@@ -32,6 +33,7 @@ const Agenda = ({ route, navigation }) => {
             return;
         }
         scrollViewRef.current?.scrollTo({y: top-height, animated: true});
+        setTemporaryHour(hour);
         setCreateEventModalVisible(true);
         setTemporaryEvent({ 'hour': hour, 'top': top, 'height': height });
     }
@@ -48,6 +50,7 @@ const Agenda = ({ route, navigation }) => {
 
     const closeCreateEventModal = () => {
         setCreateEventModalVisible(false);
+        setTemporaryHour(null);
         setTemporaryEvent(null);
     }
 
@@ -93,8 +96,8 @@ const Agenda = ({ route, navigation }) => {
                 {temporaryEvent ? <RenderTempHour/> : null}
             </View>
         </ScrollView>
-            <EventCreatorModal modalVisible={createEventModalVisible} setModalVisible={closeCreateEventModal}/>
-            <EventManagerModal modalVisible={manageEventModalVisible} closeEventManager={closeEventManager} event={manageEventModalEvent}/>
+            <EventCreatorModal modalVisible={createEventModalVisible} setModalVisible={closeCreateEventModal} day={day} month={month} year={year} hour={temporaryHour} />
+            <EventManagerModal modalVisible={manageEventModalVisible} closeEventManager={closeEventManager} event={manageEventModalEvent} />
         </>
     );
 };

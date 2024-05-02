@@ -1,25 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TextInput, Button, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { createEvent } from '../functions/EventManagement';
+import { addEvent } from '../functions/FirebaseInitial';
+import Event from '../models/Event';
+import DateTimeSelector from './DateTimeSelector';
 
-const EventCreatorModal = ({ modalVisible, setModalVisible }) => {
+const EventCreatorModal = ({ modalVisible, setModalVisible, day, month, year, hour }) => {
     const [taskName, setTaskName] = useState('');
-    const [taskHourFrom, setTaskHourFrom] = useState('');
-    const [taskHourTo, setTaskHourTo] = useState('');
 
-    const createTask = () => {
-        // Reset form values
-        setTaskName('');
-        setTaskHourFrom('');
-        setTaskHourTo('');
-        /*
-            Function validation checks
-        */
+    const initialDateTime = new Date(year, month - 1, day, hour || new Date().getHours());
+    const [taskHourFrom, setTaskHourFrom] = useState(initialDateTime);
+    const [taskHourTo, setTaskHourTo] = useState(new Date(initialDateTime.getTime() + 60 * 60 * 1000));
 
-        /*
-            Write new event to database
-            createEvent();
-        */
+    useEffect(() => {
+        if (hour) {
+            const updatedDate = new Date(year, month - 1, day, hour);
+            setTaskHourFrom(updatedDate);
+            setTaskHourTo(new Date(updatedDate.getTime() + 60 * 60 * 1000));
+        }
+    }, [hour, day, month, year]); // Listen to hour and date changes
+
+
+    const createTask = () => {        
+        const new_event = new Event(0, taskName, taskHourFrom, taskHourTo, false, 0);
+        addEvent(new_event);
 
         // Close the modal
         setModalVisible();
@@ -37,22 +41,14 @@ const EventCreatorModal = ({ modalVisible, setModalVisible }) => {
                     value={taskName}
                     onChangeText={text => setTaskName(text)}
                 />
-
-                <TextInput style={[styles.modalText, styles.modalInput]}
-                    placeholderTextColor={'white'}
-                    placeholder="Hour (From):"
-                    value={taskHourFrom}
-                    onChangeText={text => setTaskHourFrom(text)}
-                />
-
-                <TextInput style={[styles.modalText, styles.modalInput]}
-                    placeholderTextColor={'white'}
-                    placeholder="Hour (To):"
-                    value={taskHourTo}
-                    onChangeText={text => setTaskHourTo(text)}
-                />
-
-                <Button title="Create" onPress={createTask} />
+                <View style={styles.space} />
+                <View>
+                    <DateTimeSelector dateTime={taskHourFrom} setDateTime={setTaskHourFrom}/>
+                    <View style={styles.space} />
+                    <DateTimeSelector dateTime={taskHourTo} setDateTime={setTaskHourTo}/>
+                </View>
+                <View style={styles.space} />
+                <Button title="Create" onPress={createTask}/>
             </View>
     </Modal>
     );
@@ -70,6 +66,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#25292e',
         borderTopRightRadius: 18,
         borderTopLeftRadius: 18,
+    },
+    space: {
+        width: 20,
+        height: 20,
     },
     modalOuter:{
         height: '100%',
