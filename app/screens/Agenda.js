@@ -1,26 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, FlatList, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import CalendarBlock from './CalendarBlock';
-import EventCreator from '../components/EventCreator';
-const MINUTE_HEIGHT = 2;
-
-class Event {
-    constructor(id, title, start, end, allDay) {
-        this.id = id;
-        this.title = title;
-        this.start = start;
-        this.end = end;
-        this.allDay = allDay;
-        this.overlapCoefficient = 0;
-    }
-}
-
+import EventCreatorModal from '../components/EventCreatorModal';
+import EventManagerModal from '../components/EventManagerModal';
+import { formatTime, calculateHeight, calculateOverlapCoeff } from '../functions/FormattingCalendar';
+import Event from '../models/Event';
+import { MINUTE_HEIGHT } from '../config/UIDimensions';
 
 const Agenda = ({ route, navigation }) => {
     const [temporaryEvent, setTemporaryEvent] = useState(null);
-    const [modalVisible, setModalVisible] = useState(false);
-
+    const [createEventModalVisible, setCreateEventModalVisible] = useState(false);
+    const [manageEventModalVisible, setManageEventModalVisible] = useState(false);
+    const [manageEventModalEvent, setManageEventModalEvent] = useState(null);
+    const scrollViewRef = useRef(null);
     const { day, month, year } = route.params;
+
     // Sample data for events
     const events = [
         new Event(1, "Meeting with client", new Date('2024-07-04T00:00:00'), new Date('2024-07-04T04:00:00'), false, 0),
@@ -28,50 +22,6 @@ const Agenda = ({ route, navigation }) => {
         new Event(3, "Meeting with client", new Date('2024-07-04T10:30:00'), new Date('2024-07-04T11:30:00'), false, 0),
         new Event(4, "Meeting with client", new Date('2024-07-04T11:00:00'), new Date('2024-07-04T13:30:00'), false, 0)
     ];
-
-    function calculateOverlapCoeff(events){
-        for (let i = 0; i < events.length; i++){
-            for (let j = i+1; j < events.length; j++){
-                if (events[i].end > events[j].start){
-                    events[j].overlapCoefficient = events[i].overlapCoefficient + 1;
-                }
-            }
-        }
-    }
-
-    function formatNumber(num) {
-        return num.toString().padStart(2, '0');
-      }
-
-    function formatTime(num) {
-        return `${num.toString().padStart(2, '0')}:00`;
-    }
-
-    function formatTime(start, end){
-        const startHour = start.getHours();
-        const startMinutes = start.getMinutes();
-        const endHour = end.getHours();
-        const endMinutes = end.getMinutes();
-
-        return `${startHour == 0 ? 12 : startHour%12}:${startMinutes.toString().padStart(2, '0')}${startHour < 12 ? 'am' : 'pm'} - ${endHour == 0 ? 12 : endHour%12}:${endMinutes.toString().padStart(2, '0')}${endHour < 12 ? 'am' : 'pm'}`;
-    }
-
-    function calculateHeight(event) {
-        const { start, end } = event;
-        const startHour = start.getHours();
-        const startMinutes = start.getMinutes();
-        const endHour = end.getHours();
-        const endMinutes = end.getMinutes();
-
-        const startHourMinutes = startHour * 60 + startMinutes;
-        const endHourMinutes = endHour * 60 + endMinutes;
-
-
-        const top = startHourMinutes * MINUTE_HEIGHT;
-        const height = ((endHourMinutes - startHourMinutes) * MINUTE_HEIGHT)-2;
-
-        return { top, height };
-    }
 
     function calculateHourStartHourEnd(hour){
         const top = hour * 60 * MINUTE_HEIGHT;
@@ -81,10 +31,36 @@ const Agenda = ({ route, navigation }) => {
             setTemporaryEvent(null);
             return;
         }
-        setModalVisible(true);
+        scrollViewRef.current?.scrollTo({y: top-height, animated: true});
+        setCreateEventModalVisible(true);
         setTemporaryEvent({ 'hour': hour, 'top': top, 'height': height });
-
     }
+
+    function editCalendarEvent(event){
+        setManageEventModalEvent(event);
+        setManageEventModalVisible(true);
+    }
+
+    const closeEventManager = () => {
+        setManageEventModalVisible(false);
+        setManageEventModalEvent(null);
+    }
+
+    const closeCreateEventModal = () => {
+        setCreateEventModalVisible(false);
+        setTemporaryEvent(null);
+    }
+
+    // Creating hour lines
+    const hourLines = Array.from({ length: 24 }).map((_, index) => (
+        <>
+        <View style={{position: 'absolute', width: '100%', height: MINUTE_HEIGHT * 60, top: MINUTE_HEIGHT * 60 * index, zIndex: -1}}  onTouchEnd={(e) => {calculateHourStartHourEnd(index)}}></View>
+        <Text style={[styles.hourText, { top: (MINUTE_HEIGHT * 60 * index) - (20 * index) - 10 }]}>
+            {`${index === 0 ? 12 : (index % 12 === 0 ? 12 : index % 12)}${index < 12 ? 'am' : (index === 24 ? 'am' : 'pm')}`}
+        </Text>
+        <View style={[styles.hourLine, { top: MINUTE_HEIGHT * 60 * index}]}/>
+        </>
+    ));
 
     calculateOverlapCoeff(events);
 
@@ -97,27 +73,15 @@ const Agenda = ({ route, navigation }) => {
     
     const RenderHour = ({ hour, event }) => {
         return (
-            <View style={[styles.event, { top: hour.top, height: hour.height, left: 45 + (event.overlapCoefficient * 10)}]}>
+            <View style={[styles.event, { top: hour.top, height: hour.height, left: 45 + (event.overlapCoefficient * 10)}]} onTouchEnd={(e) => {editCalendarEvent(event)}}>
                 <Text style={{paddingLeft: 10, paddingTop: 5, color: 'white'}}>{event.title}</Text>
                 <Text style={{paddingLeft: 10, paddingTop: 5, color: 'white'}}>{formatTime(event.start, event.end)}</Text>
             </View>
         );
     }
 
-    // Creating hour lines
-    const hourLines = Array.from({ length: 24 }).map((_, index) => (
-        <>
-        <View style={{position: 'absolute', width: '100%', height: MINUTE_HEIGHT * 60, top: MINUTE_HEIGHT * 60 * index, zIndex: 100}}  onTouchEnd={(e) => {calculateHourStartHourEnd(index)}}></View>
-        <Text style={[styles.hourText, { top: (MINUTE_HEIGHT * 60 * index) - (20 * index) - 10 }]}>
-            {`${index === 0 ? 12 : index % 12}${index < 12 ? 'am' : 'pm'}`}
-        </Text>
-        <View style={[styles.hourLine, { top: MINUTE_HEIGHT * 60 * index}]}/>
-        </>
-    ));
-
     return (<>
-        <EventCreator modalVisible={modalVisible} setModalVisible={setModalVisible}/>
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1 }} ref={scrollViewRef}>
             <View>
                 <Text style={{fontSize: 20, textAlign: 'center', padding: 10}}>{day}/{month}/{year}</Text>
             </View>
@@ -126,9 +90,11 @@ const Agenda = ({ route, navigation }) => {
                 {events.map((event, index) => (
                     <RenderHour key={index} hour={calculateHeight(event)} event={event}/>
                 ))}
-                {temporaryEvent ? <RenderTempHour/> : <View></View>}
+                {temporaryEvent ? <RenderTempHour/> : null}
             </View>
         </ScrollView>
+            <EventCreatorModal modalVisible={createEventModalVisible} setModalVisible={closeCreateEventModal}/>
+            <EventManagerModal modalVisible={manageEventModalVisible} closeEventManager={closeEventManager} event={manageEventModalEvent}/>
         </>
     );
 };
@@ -169,6 +135,6 @@ const styles = StyleSheet.create({
     hourText: {
         color: 'rgba(200, 200, 200, 1.0)',
         width: '10%',
-        height: 20,
+        height: 20
     }
 });
