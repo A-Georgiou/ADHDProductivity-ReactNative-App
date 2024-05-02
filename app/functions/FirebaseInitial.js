@@ -1,27 +1,42 @@
 
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
-import { doc, setDoc, addDoc, collection } from "firebase/firestore"; 
+import { getDocs, addDoc, where, collection, query, or } from "firebase/firestore"; 
 import eventConverter from '../models/Event';
 
-// Function to add an event
-async function addEvent(event) {
-
-    console.log('Adding event to Firestore: ', event);
-
+// Function to read in events for specific month
+async function getEventsBetween(start, end) {
     const user = FIREBASE_AUTH.currentUser;
-    
-    console.log('Current user: ', user);
-
     if (!user) {
         console.log('User not logged in.');
         throw new Error("Authentication required: No user is currently logged in.");
     }
 
-    // Correct usage of template literals for Firestore path
-    const userEventsPath = `events/users/${user.uid}`;
+    console.log('Getting events between', start.getTime() / 1000, 'and', end.getTime() / 1000)
 
     try {
-        console.log("Firebase DB: ", FIREBASE_DB)
+        const querySnapshot = await getDocs(query(collection(FIREBASE_DB, "events", "users", user.uid), where("end" , "<", new Date('2017-01-01'))));
+        querySnapshot.forEach((doc) => {
+            // doc.data() is never undefined for query doc snapshots
+            console.log(doc.id, " => ", doc.data());
+        });
+        return querySnapshot;
+    } catch (error) {
+        console.error('Error getting events:', error);
+        throw new Error("Failed to get events: " + error.message);
+    }
+}
+
+// Function to add an event
+async function addEvent(event) {
+
+    const user = FIREBASE_AUTH.currentUser;
+    
+    if (!user) {
+        console.log('User not logged in.');
+        throw new Error("Authentication required: No user is currently logged in.");
+    }
+
+    try {
         const docRef = await addDoc(collection(FIREBASE_DB, "events", "users", user.uid), event.toFirebaseObject());
         console.log('Event added with ID:', docRef.id);
         return docRef.id;
@@ -54,6 +69,7 @@ async function modifyEvent(eventId, updatedEvent) {
 }
 
 module.exports = {
+    getEventsBetween,
     addEvent,
     deleteEvent,
     modifyEvent

@@ -4,6 +4,7 @@ import { createEvent } from '../functions/EventManagement';
 import { addEvent } from '../functions/FirebaseInitial';
 import Event from '../models/Event';
 import DateTimeSelector from './DateTimeSelector';
+import { getEventsBetween } from '../functions/FirebaseInitial';
 
 const EventCreatorModal = ({ modalVisible, setModalVisible, day, month, year, hour }) => {
     const [taskName, setTaskName] = useState('');
@@ -13,11 +14,14 @@ const EventCreatorModal = ({ modalVisible, setModalVisible, day, month, year, ho
     const [taskHourTo, setTaskHourTo] = useState(new Date(initialDateTime.getTime() + 60 * 60 * 1000));
 
     useEffect(() => {
+
         if (hour) {
             const updatedDate = new Date(year, month - 1, day, hour);
             setTaskHourFrom(updatedDate);
             setTaskHourTo(new Date(updatedDate.getTime() + 60 * 60 * 1000));
         }
+        
+        getEventsBetween(taskHourFrom, taskHourTo);
     }, [hour, day, month, year]); // Listen to hour and date changes
 
 

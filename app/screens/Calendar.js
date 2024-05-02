@@ -47,7 +47,7 @@ const Calendar = ({ navigation }) => {
     const renderDays = () => (
         <View style={styles.daysContainer}>
             {days.map(day => (
-                <TouchableOpacity key={day} style={styles.day} onPress={() => {navigation.navigate('Agenda', {'day': day, 'month': selectedMonth, 'year': selectedYear})}}>
+                <TouchableOpacity key={day} style={styles.day} onPress={() => {navigation.navigate('Agenda', {'day': day, 'month': selectedMonth+1, 'year': selectedYear})}}>
                     <Text>{day}</Text>
                 </TouchableOpacity>
             ))}
