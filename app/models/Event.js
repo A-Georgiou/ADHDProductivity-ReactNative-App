@@ -16,4 +16,8 @@ export default class Event {
             allDay: this.allDay,
         };
     }
+
+    toString(){
+        return `Event: ${this.title} from ${this.start} to ${this.end}`;
+    }
 }
