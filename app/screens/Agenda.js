@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, FlatList, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ScrollView, TouchableOpacity, Touchable } from 'react-native';
 import CalendarBlock from './CalendarBlock';
 import EventCreatorModal from '../components/EventCreatorModal';
 import EventManagerModal from '../components/EventManagerModal';
@@ -57,7 +57,7 @@ const Agenda = ({ route, navigation }) => {
     // Creating hour lines
     const hourLines = Array.from({ length: 24 }).map((_, index) => (
         <>
-        <View style={{position: 'absolute', width: '100%', height: MINUTE_HEIGHT * 60, top: MINUTE_HEIGHT * 60 * index, zIndex: -1}}  onTouchEnd={(e) => {calculateHourStartHourEnd(index)}}></View>
+        <TouchableOpacity style={{position: 'absolute', width: '100%', height: MINUTE_HEIGHT * 60, top: MINUTE_HEIGHT * 60 * index, zIndex: -1}}  onPress={(e) => {calculateHourStartHourEnd(index)}}></TouchableOpacity>
         <Text style={[styles.hourText, { top: (MINUTE_HEIGHT * 60 * index) - (20 * index) - 10 }]}>
             {`${index === 0 ? 12 : (index % 12 === 0 ? 12 : index % 12)}${index < 12 ? 'am' : (index === 24 ? 'am' : 'pm')}`}
         </Text>
@@ -76,10 +76,10 @@ const Agenda = ({ route, navigation }) => {
     
     const RenderHour = ({ hour, event }) => {
         return (
-            <View style={[styles.event, { top: hour.top, height: hour.height, left: 45 + (event.overlapCoefficient * 10)}]} onTouchEnd={(e) => {editCalendarEvent(event)}}>
+            <TouchableOpacity style={[styles.event, { top: hour.top, height: hour.height, left: 45 + (event.overlapCoefficient * 10)}]} onPress={(e) => {editCalendarEvent(event)}}>
                 <Text style={{paddingLeft: 10, paddingTop: 5, color: 'white'}}>{event.title}</Text>
                 <Text style={{paddingLeft: 10, paddingTop: 5, color: 'white'}}>{formatTime(event.start, event.end)}</Text>
-            </View>
+            </TouchableOpacity>
         );
     }
 
