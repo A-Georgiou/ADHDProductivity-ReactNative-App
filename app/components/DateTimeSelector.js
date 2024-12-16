@@ -32,7 +32,7 @@ const DateTimeSelector = ({ dateTime, setDateTime }) => {
                     testID="dateTimePicker"
                     value={dateTime}
                     mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    display={Platform.OS === 'ios' ? 'default' : 'default'}
                     onChange={onChange}
                 />
             )}
@@ -42,7 +42,7 @@ const DateTimeSelector = ({ dateTime, setDateTime }) => {
                     value={dateTime}
                     mode="time"
                     is24Hour={true}
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    display={Platform.OS === 'ios' ? 'default' : 'default'}
                     onChange={onChange}
                 />
             )}

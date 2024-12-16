@@ -51,7 +51,7 @@ const Login = ({ navigation }) => {
         });
     }
 
-     /*
+    /*
     * Async FireBase sign up function
     */
     const signUp = async () => {
@@ -113,10 +113,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10
     },
     button: {
-        marginBottom: 10 // Add vertical spacing between buttons
+        marginBottom: 10 
     },
     space: {
-        width: 20, // or whatever size you need
+        width: 20,
         height: 10,
     },
     image: {

@@ -2,8 +2,8 @@ import React, { useRef } from 'react';
 import { Modal, View, Text, Button, PanResponder } from 'react-native';
 import { deleteEvent, modifyEvent } from '../functions/EventManagement';
 import { formatTime } from '../functions/FormattingCalendar';
-const EventManagerModal = ({ modalVisible, closeEventManager, event }) => {
 
+const EventManagerModal = ({ modalVisible, closeEventManager, event }) => {
     const panResponder = useRef(
         PanResponder.create({
           onStartShouldSetPanResponder: () => true,

@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { getEventsForMonth } from '../functions/QueryDBEvents';
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const monthsOfYear = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+/*
+
+Calendar Screen:
+- A simple calendar screen that displays the days of the month
+- The user can navigate between months using the arrow buttons
+- Each day is a button that navigates to the Agenda screen for that day
+
+*/
+
 const Calendar = ({ navigation }) => {
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [events, setEvents] = useState([]);
+
+    useEffect(() => {
+        async function loadEvents() {
+            const eventsForMonth = await getEventsForMonth(selectedMonth, selectedYear);
+            setEvents(eventsForMonth);
+        }
+        loadEvents();
+    }, [selectedMonth]);
 
     function updateMonth(increment) {
         setSelectedMonth((prevMonth) => {
@@ -17,7 +36,7 @@ const Calendar = ({ navigation }) => {
                     setSelectedYear((prevYear) => prevYear + 1);
                 }
             } else {
-                newMonth = (prevMonth - 1 + 12) % 12; // Adding 12 ensures the result is non-negative
+                newMonth = (prevMonth - 1 + 12) % 12;
                 if (prevMonth === 0) {
                     setSelectedYear((prevYear) => prevYear - 1);
                 }
@@ -47,8 +66,8 @@ const Calendar = ({ navigation }) => {
     const renderDays = () => (
         <View style={styles.daysContainer}>
             {days.map(day => (
-                <TouchableOpacity key={day} style={styles.day} onPress={() => {navigation.navigate('Agenda', {'day': day, 'month': selectedMonth+1, 'year': selectedYear})}}>
-                    <Text>{day}</Text>
+                <TouchableOpacity key={'touch-'+day} style={styles.day} onPress={() => {navigation.navigate('Agenda', {'day': day, 'month': selectedMonth+1, 'year': selectedYear})}}>
+                    <Text key={'text-'+day}>{day}</Text>
                 </TouchableOpacity>
             ))}
         </View>

@@ -1,9 +1,10 @@
 
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
-import { getDocs, addDoc, where, collection, query, or } from "firebase/firestore"; 
+import { getDocs, addDoc, where, collection, query, or, and } from "firebase/firestore"; 
 import eventConverter from '../models/Event';
 
-// Function to read in events for specific month
+// Reads in events between two dates
+// Queries FireBase for events between two dates
 async function getEventsBetween(start, end) {
     const user = FIREBASE_AUTH.currentUser;
     if (!user) {
@@ -11,15 +12,25 @@ async function getEventsBetween(start, end) {
         throw new Error("Authentication required: No user is currently logged in.");
     }
 
-    console.log('Getting events between', start.getTime() / 1000, 'and', end.getTime() / 1000)
+    console.log('Getting events between', start.getTime() / 1000, 'and', end.getTime() / 1000);
 
     try {
-        const querySnapshot = await getDocs(query(collection(FIREBASE_DB, "events", "users", user.uid), where("end" , "<", new Date('2017-01-01'))));
+        const eventsRef = collection(FIREBASE_DB, "events", "users", user.uid);
+        const q = query(
+            eventsRef,
+            and(
+                where("start", ">=", start),
+                where("start", "<=", end)
+            )
+        );
+        
+        const querySnapshot = await getDocs(q);
+        const events = [];
         querySnapshot.forEach((doc) => {
-            // doc.data() is never undefined for query doc snapshots
             console.log(doc.id, " => ", doc.data());
+            events.push({ id: doc.id, ...doc.data() });
         });
-        return querySnapshot;
+        return events;
     } catch (error) {
         console.error('Error getting events:', error);
         throw new Error("Failed to get events: " + error.message);

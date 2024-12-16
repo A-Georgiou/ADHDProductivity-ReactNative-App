@@ -21,7 +21,7 @@ const EventCreatorModal = ({ modalVisible, setModalVisible, day, month, year, ho
             setTaskHourTo(new Date(updatedDate.getTime() + 60 * 60 * 1000));
         }
         
-        getEventsBetween(taskHourFrom, taskHourTo);
+        //getEventsBetween(taskHourFrom, taskHourTo);
     }, [hour, day, month, year]); // Listen to hour and date changes
 
 

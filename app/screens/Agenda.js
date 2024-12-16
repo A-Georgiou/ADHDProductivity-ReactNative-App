@@ -7,6 +7,16 @@ import { formatTime, calculateHeight, calculateOverlapCoeff } from '../functions
 import Event from '../models/Event';
 import { MINUTE_HEIGHT } from '../config/UIDimensions';
 
+
+/*
+
+Agenda Screen:
+- A screen that displays a full day's events
+- The user can add events to the day
+- The user can view and edit existing events
+
+*/
+
 const Agenda = ({ route, navigation }) => {
     const [temporaryEvent, setTemporaryEvent] = useState(null);
     const [temporaryHour, setTemporaryHour] = useState(null);
@@ -35,7 +45,7 @@ const Agenda = ({ route, navigation }) => {
         scrollViewRef.current?.scrollTo({y: top-height, animated: true});
         setTemporaryHour(hour);
         setCreateEventModalVisible(true);
-        setTemporaryEvent({ 'hour': hour, 'top': top, 'height': height });
+        setTemporaryEvent({'hour': hour, 'top': top, 'height': height });
     }
 
     function editCalendarEvent(event){
@@ -54,15 +64,14 @@ const Agenda = ({ route, navigation }) => {
         setTemporaryEvent(null);
     }
 
-    // Creating hour lines
     const hourLines = Array.from({ length: 24 }).map((_, index) => (
-        <>
-        <TouchableOpacity style={{position: 'absolute', width: '100%', height: MINUTE_HEIGHT * 60, top: MINUTE_HEIGHT * 60 * index, zIndex: -1}}  onPress={(e) => {calculateHourStartHourEnd(index)}}></TouchableOpacity>
-        <Text style={[styles.hourText, { top: (MINUTE_HEIGHT * 60 * index) - (20 * index) - 10 }]}>
+        <React.Fragment key={'fragment-'+index}>
+        <TouchableOpacity key={'touchable-'+index} style={{position: 'absolute', width: '100%', height: MINUTE_HEIGHT * 60, top: MINUTE_HEIGHT * 60 * index, zIndex: -1}}  onPress={(e) => {calculateHourStartHourEnd(index)}}></TouchableOpacity>
+        <Text key={'text-'+index} style={[styles.hourText, { top: (MINUTE_HEIGHT * 60 * index) - (20 * index) - 10 }]}>
             {`${index === 0 ? 12 : (index % 12 === 0 ? 12 : index % 12)}${index < 12 ? 'am' : (index === 24 ? 'am' : 'pm')}`}
         </Text>
-        <View style={[styles.hourLine, { top: MINUTE_HEIGHT * 60 * index}]}/>
-        </>
+        <View key={'view-'+index} style={[styles.hourLine, { top: MINUTE_HEIGHT * 60 * index}]}/>
+        </React.Fragment>
     ));
 
     calculateOverlapCoeff(events);
@@ -83,15 +92,16 @@ const Agenda = ({ route, navigation }) => {
         );
     }
 
-    return (<>
+    return (
+        <>
         <ScrollView style={{ flex: 1 }} ref={scrollViewRef}>
             <View>
                 <Text style={{fontSize: 20, textAlign: 'center', padding: 10}}>{day}/{month}/{year}</Text>
             </View>
             <View style={styles.container}>
                 {hourLines}
-                {events.map((event, index) => (
-                    <RenderHour key={index} hour={calculateHeight(event)} event={event}/>
+                {events.map((event) => (
+                    <RenderHour key={event.id} hour={calculateHeight(event)} event={event} />
                 ))}
                 {temporaryEvent ? <RenderTempHour/> : null}
             </View>

@@ -1,6 +1,19 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 
+/*
+
+CalendarBlock Component:
+- A component that represents an event on the calendar
+- Takes an item object with the following properties:
+  - id: the id of the event
+  - title: the title of the event
+  - start: the start time of the event
+  - end: the end time of the event
+  - allDay: a boolean indicating if the event is an all-day event
+
+*/
+
 const calculateItemStyle = (start, end) => {
     const startHour = start.getHours();
     const startMinutes = start.getMinutes();
